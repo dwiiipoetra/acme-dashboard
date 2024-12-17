@@ -1,4 +1,9 @@
-import { sql } from '@vercel/postgres';
+// import { sql } from '@vercel/postgres';
+// initiate supabase client
+import { createClient } from '@supabase/supabase-js';
+const supabaseUrl = 'https://iptsgvvlxhiwkvrvzghf.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwdHNndnZseGhpd2t2cnZ6Z2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM3MTYzODAsImV4cCI6MjA0OTI5MjM4MH0.JzSmQBQl3SJwzEweGKBKlR7dokh4WsSwbiQyx1Moxi0';
+const supabase = createClient(supabaseUrl, supabaseKey);
 import {
   CustomerField,
   CustomersTableType,
@@ -9,19 +14,38 @@ import {
 } from './definitions';
 import { formatCurrency } from './utils';
 
+// export async function fetchRevenue() {
+//   try {
+//     // Artificially delay a response for demo purposes.
+//     // Don't do this in production :)
+
+//     // console.log('Fetching revenue data...');
+//     // await new Promise((resolve) => setTimeout(resolve, 3000));
+
+//     const data = await sql<Revenue>`SELECT * FROM revenue`;
+
+//     // console.log('Data fetch completed after 3 seconds.');
+
+//     return data.rows;
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch revenue data.');
+//   }
+// }
+
 export async function fetchRevenue() {
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
+    // Mengambil data dari tabel revenue
+    const { data, error } = await supabase
+      .from<Revenue>('revenue')
+      .select('*');
 
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    if (error) {
+      throw error;
+    }
 
-    const data = await sql<Revenue>`SELECT * FROM revenue`;
-
-    // console.log('Data fetch completed after 3 seconds.');
-
-    return data.rows;
+    // console.log(data);
+    return data;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch revenue data.');
