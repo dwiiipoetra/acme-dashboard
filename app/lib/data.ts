@@ -36,10 +36,12 @@ import { formatCurrency } from './utils';
 export async function fetchRevenue():Promise<Revenue[]> {
   try {
     // Mengambil data dari tabel revenue
+    // console.log('fetching data');
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     const { data, error } = await supabase
       .from('revenue')
       .select('*');
-
+    // console.log('Data fetch completed after 5 seconds.');
     if (error) {
       throw error;
     }
@@ -73,6 +75,7 @@ export async function fetchRevenue():Promise<Revenue[]> {
 
 export async function fetchLatestInvoices() {
   try {
+    await new Promise((resolve) => setTimeout(resolve, 6000));
     const { data, error } = await supabase
       .from('invoices')
       .select(`
