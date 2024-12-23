@@ -37,7 +37,7 @@ export async function fetchRevenue():Promise<Revenue[]> {
   try {
     // Mengambil data dari tabel revenue
     // console.log('fetching data');
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     const { data, error } = await supabase
       .from('revenue')
       .select('*');
@@ -75,7 +75,7 @@ export async function fetchRevenue():Promise<Revenue[]> {
 
 export async function fetchLatestInvoices() {
   try {
-    await new Promise((resolve) => setTimeout(resolve, 6000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     const { data, error } = await supabase
       .from('invoices')
       .select(`
@@ -178,61 +178,140 @@ export async function fetchCardData() {
   }
 }
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 3;
+
+// export async function fetchFilteredInvoices(
+//   query: string,
+//   currentPage: number,
+// ) {
+//   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+//   try {
+//     const invoices = await sql<InvoicesTable>`
+//       SELECT
+//         invoices.id,
+//         invoices.amount,
+//         invoices.date,
+//         invoices.status,
+//         customers.name,
+//         customers.email,
+//         customers.image_url
+//       FROM invoices
+//       JOIN customers ON invoices.customer_id = customers.id
+//       WHERE
+//         customers.name ILIKE ${`%${query}%`} OR
+//         customers.email ILIKE ${`%${query}%`} OR
+//         invoices.amount::text ILIKE ${`%${query}%`} OR
+//         invoices.date::text ILIKE ${`%${query}%`} OR
+//         invoices.status ILIKE ${`%${query}%`}
+//       ORDER BY invoices.date DESC
+//       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+//     `;
+
+//     return invoices.rows;
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch invoices.');
+//   }
+// }
+
 export async function fetchFilteredInvoices(
-  query: string,
+  query: string | number,
   currentPage: number,
 ) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-
+  const amountQuery = `amount.eq.${!isNaN(query) ? Number(query): 0}`;
+  // const dateQuery = query === "" ? "date.is.null" : `date.ilike.%${query}%`;
+  const statusQuery = `status.ilike.%${query}%`;
   try {
-    const invoices = await sql<InvoicesTable>`
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
-
-    return invoices.rows;
+    const { data, error } = await supabase
+    .from('invoices')
+    .select(`
+      id,
+      amount,
+      date,
+      status,
+      customers (name, email, image_url)
+    `)
+    // .or(`${amountQuery},${statusQuery}`)
+    .or(`name.ilike.%${query}%`, { referencedTable: 'customers' })
+    // .or(`email.ilike.%${query}%`, { referencedTable: 'customers' })
+    .order('date', { ascending: false })
+    .range(offset, offset + ITEMS_PER_PAGE - 1);
+    
+    if (error) {
+      throw error;
+    }
+    console.log({data});
+    return data;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
   }
 }
 
-export async function fetchInvoicesPages(query: string) {
-  try {
-    const count = await sql`SELECT COUNT(*)
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    WHERE
-      customers.name ILIKE ${`%${query}%`} OR
-      customers.email ILIKE ${`%${query}%`} OR
-      invoices.amount::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
-      invoices.status ILIKE ${`%${query}%`}
-  `;
+// export async function fetchInvoicesPages(query: string) {
+//   try {
+//     const count = await sql`SELECT COUNT(*)
+//     FROM invoices
+//     JOIN customers ON invoices.customer_id = customers.id
+//     WHERE
+//       customers.name ILIKE ${`%${query}%`} OR
+//       customers.email ILIKE ${`%${query}%`} OR
+//       invoices.amount::text ILIKE ${`%${query}%`} OR
+//       invoices.date::text ILIKE ${`%${query}%`} OR
+//       invoices.status ILIKE ${`%${query}%`}
+//   `;
 
-    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+//     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+//     return totalPages;
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch total number of invoices.');
+//   }
+// }
+
+export async function fetchInvoicesPages(query: string) {
+  const amountQuery = `amount.eq.${!isNaN(query) ? Number(query): 0}`;
+  // const dateQuery = query === "" ? "date.is.null" : `date.ilike.%${query}%`;
+  const statusQuery = `status.ilike.%${query}%`;
+  try {
+    const { count, error } = await supabase
+    .from('invoices')
+    .select('*', { count: 'exact', head: true })
+    .or(`${amountQuery},${statusQuery}`)
+    // .or(`name.ilike.%${query}%`, { referencedTable: 'customers' });
+    // .or(`email.ilike.%${query}%`, { referencedTable: 'customers' })
+    
+    if (error) {
+      throw error;
+    }
+    const totalPages = Math.ceil(Number(count) / ITEMS_PER_PAGE);
+    console.log({totalPages});
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch total number of invoices.');
+    throw new Error('Failed to fetch total number of invoices');
   }
+
+  // try {
+  //   const count = await sql`SELECT COUNT(*)
+  //   FROM invoices
+  //   JOIN customers ON invoices.customer_id = customers.id
+  //   WHERE
+  //     customers.name ILIKE ${`%${query}%`} OR
+  //     customers.email ILIKE ${`%${query}%`} OR
+  //     invoices.amount::text ILIKE ${`%${query}%`} OR
+  //     invoices.date::text ILIKE ${`%${query}%`} OR
+  //     invoices.status ILIKE ${`%${query}%`}
+  // `;
+
+  //   const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+  //   return totalPages;
+  // } catch (error) {
+  //   console.error('Database Error:', error);
+  //   throw new Error('Failed to fetch total number of invoices.');
+  // }
 }
 
 export async function fetchInvoiceById(id: string) {
