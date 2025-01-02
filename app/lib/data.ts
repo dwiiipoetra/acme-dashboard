@@ -178,7 +178,7 @@ export async function fetchCardData() {
   }
 }
 
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 10;
 
 // export async function fetchFilteredInvoices(
 //   query: string,
@@ -236,13 +236,12 @@ export async function fetchFilteredInvoices(
     // .or(`${amountQuery},${statusQuery}`)
     .or(`name.ilike.%${query}%`, { referencedTable: 'customers' })
     // .or(`email.ilike.%${query}%`, { referencedTable: 'customers' })
-    .order('date', { ascending: false })
-    .range(offset, offset + ITEMS_PER_PAGE - 1);
-    
+    .range(offset, offset + ITEMS_PER_PAGE - 1)
+    .order('date', { ascending: false });
+
     if (error) {
       throw error;
     }
-    console.log({data});
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -282,7 +281,7 @@ export async function fetchInvoicesPages(query: string) {
     .or(`${amountQuery},${statusQuery}`)
     // .or(`name.ilike.%${query}%`, { referencedTable: 'customers' });
     // .or(`email.ilike.%${query}%`, { referencedTable: 'customers' })
-    
+    .order('date', { ascending: false })
     if (error) {
       throw error;
     }
@@ -314,46 +313,88 @@ export async function fetchInvoicesPages(query: string) {
   // }
 }
 
+// export async function fetchInvoiceById(id: string) {
+//   try {
+//     const data = await sql<InvoiceForm>`
+//       SELECT
+//         invoices.id,
+//         invoices.customer_id,
+//         invoices.amount,
+//         invoices.status
+//       FROM invoices
+//       WHERE invoices.id = ${id};
+//     `;
+
+//     const invoice = data.rows.map((invoice) => ({
+//       ...invoice,
+//       // Convert amount from cents to dollars
+//       amount: invoice.amount / 100,
+//     }));
+
+//     return invoice[0];
+//   } catch (error) {
+//     console.error('Database Error:', error);
+//     throw new Error('Failed to fetch invoice.');
+//   }
+// }
+
 export async function fetchInvoiceById(id: string) {
   try {
-    const data = await sql<InvoiceForm>`
-      SELECT
-        invoices.id,
-        invoices.customer_id,
-        invoices.amount,
-        invoices.status
-      FROM invoices
-      WHERE invoices.id = ${id};
-    `;
+    const { data, error } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('id', id)
+    
+    if (error) {
+      throw error;
+    }
 
-    const invoice = data.rows.map((invoice) => ({
+    const invoice = data.map((invoice) => ({
       ...invoice,
       // Convert amount from cents to dollars
       amount: invoice.amount / 100,
     }));
-
+    
+    // console.log({data});
     return invoice[0];
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch invoice.');
+    throw new Error('Failed to fetch invoice');
   }
 }
 
+// export async function fetchCustomers() {
+//   try {
+//     const data = await sql<CustomerField>`
+//       SELECT
+//         id,
+//         name
+//       FROM customers
+//       ORDER BY name ASC
+//     `;
+
+//     const customers = data.rows;
+//     return customers;
+//   } catch (err) {
+//     console.error('Database Error:', err);
+//     throw new Error('Failed to fetch all customers.');
+//   }
+// }
+
 export async function fetchCustomers() {
   try {
-    const data = await sql<CustomerField>`
-      SELECT
-        id,
-        name
-      FROM customers
-      ORDER BY name ASC
-    `;
-
-    const customers = data.rows;
-    return customers;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch all customers.');
+    const { data, error } = await supabase
+    .from('customers')
+    .select('id,name')
+    .order('name', { ascending: true })
+    
+    if (error) {
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch all customers');
   }
 }
 

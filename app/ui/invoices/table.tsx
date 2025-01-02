@@ -108,7 +108,6 @@ export default async function InvoicesTable({
                     {formatDateToLocal(invoice.date)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                    <p className="text-sm">{invoice.status}</p>
                     <InvoiceStatus status={invoice.status} />
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
