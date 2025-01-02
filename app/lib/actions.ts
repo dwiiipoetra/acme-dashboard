@@ -43,7 +43,6 @@ export async function createInvoice(formData: FormData) {
 
     if (error) {
         console.error('Error inserting invoice:', error);
-        return "null";
     }
     console.log('Invoice inserted:', data);
     
@@ -73,7 +72,6 @@ export async function updateInvoice(id: string, formData: FormData) {
 
     if (error) {
         console.error('Error updating invoice:', error);
-        return "null";
     }
     console.log('Invoice updated:', data);
     
@@ -89,9 +87,8 @@ export async function deleteInvoice(id: string) {
 
     if (error) {
         console.error('Error deleting invoice:', error);
-        return "null";
     }
-    console.log('Invoice updated:', data);
+    console.log('Invoice deleted:', data);
     
     revalidatePath('/dashboard/invoices');
 }
