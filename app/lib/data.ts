@@ -6,7 +6,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 import {
   CustomerField,
-  CustomersTableType,
+  // CustomersTableType,
   InvoiceForm,
   InvoicesTable,
   LatestInvoiceRaw,
@@ -73,14 +73,15 @@ export async function fetchRevenue():Promise<Revenue[]> {
 //   }
 // }
 
-export async function fetchLatestInvoices() {
+export async function fetchLatestInvoices():Promise<LatestInvoiceRaw[]> {
   try {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     const { data, error } = await supabase
       .from('invoices')
       .select(`
+        id,
         amount,
-        customers ( name, image_url, email ), id
+        customers ( name, image_url, email )
       `)
       .order('date', { ascending: false })
       .limit(5);
@@ -216,20 +217,21 @@ const ITEMS_PER_PAGE = 10;
 // }
 
 export async function fetchFilteredInvoices(
-  query: string | number,
+  query: string,
   currentPage: number,
-) {
+):Promise<InvoicesTable[]> {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-  const amountQuery = `amount.eq.${!isNaN(query) ? Number(query): 0}`;
+  // const amountQuery = `amount.eq.${!isNaN(query) ? Number(query): 0}`; //DONE
   // const dateQuery = query === "" ? "date.is.null" : `date.ilike.%${query}%`;
-  const statusQuery = `status.ilike.%${query}%`;
+  // const statusQuery = `status.ilike.%${query}%`; //DONE
   try {
     const { data, error } = await supabase
     .from('invoices')
     .select(`
       id,
-      amount,
+      customer_id,
       date,
+      amount,
       status,
       customers (name, email, image_url)
     `)
@@ -338,11 +340,11 @@ export async function fetchInvoicesPages(query: string) {
 //   }
 // }
 
-export async function fetchInvoiceById(id: string) {
+export async function fetchInvoiceById(id: string):Promise<InvoiceForm[]> {
   try {
     const { data, error } = await supabase
     .from('invoices')
-    .select('*')
+    .select('id, customer_id, amount, status')
     .eq('id', id)
     
     if (error) {
@@ -355,7 +357,7 @@ export async function fetchInvoiceById(id: string) {
       amount: invoice.amount / 100,
     }));
     
-    return invoice[0];
+    return invoice;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoice');
@@ -380,7 +382,7 @@ export async function fetchInvoiceById(id: string) {
 //   }
 // }
 
-export async function fetchCustomers() {
+export async function fetchCustomers():Promise<CustomerField[]> {
   try {
     const { data, error } = await supabase
     .from('customers')
