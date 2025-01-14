@@ -5,12 +5,12 @@ const supabaseUrl = 'https://iptsgvvlxhiwkvrvzghf.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwdHNndnZseGhpd2t2cnZ6Z2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM3MTYzODAsImV4cCI6MjA0OTI5MjM4MH0.JzSmQBQl3SJwzEweGKBKlR7dokh4WsSwbiQyx1Moxi0';
 const supabase = createClient(supabaseUrl, supabaseKey);
 import {
-  CustomerField,
+  // CustomerField,
   // CustomersTableType,
-  InvoiceForm,
-  InvoicesTable,
-  LatestInvoiceRaw,
-  Revenue,
+  // InvoiceForm,
+  // InvoicesTable,
+  // LatestInvoiceRaw,
+  // Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -33,7 +33,8 @@ import { formatCurrency } from './utils';
 //   }
 // }
 
-export async function fetchRevenue():Promise<Revenue[]> {
+// export async function fetchRevenue():Promise<Revenue[]> {
+export async function fetchRevenue() {
   try {
     // Mengambil data dari tabel revenue
     // console.log('fetching data');
@@ -73,7 +74,8 @@ export async function fetchRevenue():Promise<Revenue[]> {
 //   }
 // }
 
-export async function fetchLatestInvoices():Promise<LatestInvoiceRaw[]> {
+// export async function fetchLatestInvoices():Promise<LatestInvoiceRaw[]> {
+export async function fetchLatestInvoices() {
   try {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     const { data, error } = await supabase
@@ -216,10 +218,8 @@ const ITEMS_PER_PAGE = 10;
 //   }
 // }
 
-export async function fetchFilteredInvoices(
-  query: string,
-  currentPage: number,
-):Promise<InvoicesTable[]> {
+// export async function fetchFilteredInvoices(query: string, currentPage: number): Promise<InvoicesTable[]> {
+export async function fetchFilteredInvoices(query: string, currentPage: number) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
   // const amountQuery = `amount.eq.${!isNaN(query) ? Number(query): 0}`; //DONE
   // const dateQuery = query === "" ? "date.is.null" : `date.ilike.%${query}%`;
@@ -340,7 +340,8 @@ export async function fetchInvoicesPages(query: string) {
 //   }
 // }
 
-export async function fetchInvoiceById(id: string):Promise<InvoiceForm[]> {
+// export async function fetchInvoiceById(id: string):Promise<InvoiceForm[]> {
+export async function fetchInvoiceById(id: string) {
   try {
     const { data, error } = await supabase
     .from('invoices')
@@ -382,7 +383,8 @@ export async function fetchInvoiceById(id: string):Promise<InvoiceForm[]> {
 //   }
 // }
 
-export async function fetchCustomers():Promise<CustomerField[]> {
+// export async function fetchCustomers():Promise<CustomerField[]> {
+export async function fetchCustomers() {
   try {
     const { data, error } = await supabase
     .from('customers')
