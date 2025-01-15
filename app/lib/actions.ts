@@ -3,14 +3,9 @@ import { z } from 'zod';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 
-// initiate supabase client
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../config/supabaseClient';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-
-const supabaseUrl = 'https://iptsgvvlxhiwkvrvzghf.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwdHNndnZseGhpd2t2cnZ6Z2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM3MTYzODAsImV4cCI6MjA0OTI5MjM4MH0.JzSmQBQl3SJwzEweGKBKlR7dokh4WsSwbiQyx1Moxi0';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 const FormSchema = z.object({
     id: z.string(),

@@ -1,9 +1,5 @@
 // import { sql } from '@vercel/postgres';
-// initiate supabase client
-import { createClient } from '@supabase/supabase-js';
-const supabaseUrl = 'https://iptsgvvlxhiwkvrvzghf.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwdHNndnZseGhpd2t2cnZ6Z2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM3MTYzODAsImV4cCI6MjA0OTI5MjM4MH0.JzSmQBQl3SJwzEweGKBKlR7dokh4WsSwbiQyx1Moxi0';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '../config/supabaseClient';
 import {
   // CustomerField,
   // CustomersTableType,
@@ -244,6 +240,7 @@ export async function fetchFilteredInvoices(query: string, currentPage: number) 
     if (error) {
       throw error;
     }
+    console.log({data});
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -289,7 +286,7 @@ export async function fetchInvoicesPages(query: string) {
     }
     const totalPages = Math.ceil(Number(count) / ITEMS_PER_PAGE);
     console.log({totalPages});
-    return totalPages;
+    return Number(totalPages);
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch total number of invoices');
